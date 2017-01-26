@@ -23,28 +23,20 @@ defmodule TesslaServer.Output do
     Agent.cast __MODULE__, fn state ->
       name = Map.get(state, id)
       if name do
-        Logger.warn("#{name} progressed to: #{inspect event.timestamp}" <> "\n-------------\n")
-      end
-      state
-    end
-  end
-  def log_new_event(id, event) do
-    Agent.cast __MODULE__, fn state ->
-      name = Map.get(state, id)
-      if name do
-        formatted = format event
-        Logger.warn("New output of #{name}: \n" <> formatted <> "\n-------------\n")
-        # Remove comment to terminate TesslaServer on first `true` value
-        # if event.value == true do
-        #   Logger.flush
-        #   System.halt
-        # end
+        Logger.warn("#{name} progressed to: #{inspect event.timestamp}")
       end
       state
     end
   end
 
-  defp format(event) do
-    "time: #{inspect event.timestamp}, value: #{inspect event.value}"
+  def log_new_event(id, event) do
+    Agent.cast __MODULE__, fn state ->
+      name = Map.get(state, id)
+      if name do
+        seconds = Timex.Duration.to_seconds(event.timestamp)
+        IO.puts "#{name}@#{seconds}:#{event.value}"
+      end
+      state
+    end
   end
 end
